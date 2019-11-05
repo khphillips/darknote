@@ -9,6 +9,13 @@
       "first_name": "Keith",
       "last_name": "Phillips",
       "email": "keith@paleosun.com"
+    },
+    "2": {
+      "$id": 2,
+      "id": 2,
+      "first_name": "Keith",
+      "last_name": "Phillips",
+      "email": "keith@paleosun.com"
     }
   }
 }
