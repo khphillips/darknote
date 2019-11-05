@@ -3,7 +3,7 @@
         <template v-slot:activator="{ on }">
             <v-badge color="accent">
                 <template v-slot:badge>
-                    <span>!</span>
+                    <span v-if="remote_url == null || remote_url == ''">!</span>
                 </template>
                 <v-icon class="text3--text" v-on="on">fab fa-github</v-icon>
             </v-badge>
@@ -16,6 +16,7 @@
             </v-card-title>
             <v-card-text>
                 <v-text-field dense v-model="username" label="Username"></v-text-field>
+                <v-text-field password dense v-model="password" label="Password"></v-text-field>
                 <v-text-field dense v-model="email" label="Email"></v-text-field>
                 <v-text-field dense v-model="repo" label="Repo"></v-text-field>
                 <v-text-field dense v-model="remote_url" label="Remote Url"></v-text-field>
@@ -31,16 +32,29 @@ export default {
             menu: false,
         }
     },
-    created: function() {
-
+    mounted: function() {
+        if (typeof this.username == 'undefined' || this.username == null){
+            //not defined so lets pull from localStorage
+            console.log(this.localGitStore);
+            if(this.localGitStore != null){
+                var ls = JSON.parse(this.localGitStore);
+                this.$store.dispatch('gitstore/setUser', ls)
+                this.$store.dispatch('gitstore/setRemoteUrl', ls.remote_url)
+                this.$store.dispatch('gitstore/setRepo', ls.repo)
+            }
+        }
     },
     computed: {
+        localGitStore : function(){
+            return localStorage.getItem('gitStore');
+        },
         username: {
             get() {
                 return this.$store.state.gitstore ? this.$store.state.gitstore.username : ''
             },
             set(value) {
-                this.$store.dispatch('gitstore/setUser', { username: value })
+                this.$store.dispatch('gitstore/setUser', { username: value });
+                this.setLocalGitStore();
             }
         },
         email: {
@@ -49,6 +63,16 @@ export default {
             },
             set(value) {
                 this.$store.dispatch('gitstore/setUser', { email: value })
+                this.setLocalGitStore();
+            }
+        },
+        password: {
+            get() {
+                return this.$store.state.gitstore ? this.$store.state.gitstore.password : ''
+            },
+            set(value) {
+                this.$store.dispatch('gitstore/setUser', { password: value })
+                this.setLocalGitStore();
             }
         },
         repo: {
@@ -57,6 +81,7 @@ export default {
             },
             set(value) {
                 this.$store.dispatch('gitstore/setRepo', value)
+                this.setLocalGitStore();
             }
         },
         remote_url: {
@@ -65,11 +90,14 @@ export default {
             },
             set(value) {
                 this.$store.dispatch('gitstore/setRemoteUrl', value)
+                this.setLocalGitStore();
             }
         }
     },
     methods: {
-
+        setLocalGitStore : function(){
+            localStorage.setItem('gitStore', JSON.stringify(this.$store.state.gitstore) )
+        }
     }
 }
 </script>

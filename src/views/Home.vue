@@ -35,11 +35,7 @@ import config from '../../config'
 export default {
   name: 'home',
   mounted: function(){
-    this.$store.dispatch('gitstore/setUser', {
-        username : 'keith',
-        email : 'keith@mudstuffing.com',
-        password: 'test123'
-      })
+
   },
   computed: {
     items(){
