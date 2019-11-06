@@ -20,7 +20,13 @@
                 <v-text-field dense v-model="email" label="Email"></v-text-field>
                 <v-text-field dense v-model="repo" label="Repo"></v-text-field>
                 <v-text-field dense v-model="remote_url" label="Remote Url"></v-text-field>
+                ++{{ repo }}++{{ remote_url }}++
             </v-card-text>
+            <v-card-actions>
+                <v-btn @click="clone">Clone</v-btn>
+                <v-btn @click="pull">Pull</v-btn>
+                <v-btn @click="init">Init</v-btn>
+            </v-card-actions>
         </v-card>
     </v-menu>
 </template>
@@ -30,17 +36,21 @@ export default {
     data: function() {
         return {
             menu: false,
+            repo : null,
+            remote_url : null
         }
     },
-    mounted: function() {
+    created: function() {
         if (typeof this.username == 'undefined' || this.username == null){
             //not defined so lets pull from localStorage
-            console.log(this.localGitStore);
             if(this.localGitStore != null){
                 var ls = JSON.parse(this.localGitStore);
+                console.log('setting from localstorage')
                 this.$store.dispatch('gitstore/setUser', ls)
-                this.$store.dispatch('gitstore/setRemoteUrl', ls.remote_url)
-                this.$store.dispatch('gitstore/setRepo', ls.repo)
+                this.$store.dispatch('gitstore/pullRepo', {
+                    repo : ls.repo,
+                    remote_url : ls.remote_url
+                });
             }
         }
     },
@@ -74,29 +84,41 @@ export default {
                 this.$store.dispatch('gitstore/setUser', { password: value })
                 this.setLocalGitStore();
             }
-        },
-        repo: {
-            get() {
-                return this.$store.state.gitstore ? this.$store.state.gitstore.repo : ''
-            },
-            set(value) {
-                this.$store.dispatch('gitstore/setRepo', value)
-                this.setLocalGitStore();
-            }
-        },
-        remote_url: {
-            get() {
-                return this.$store.state.gitstore ? this.$store.state.gitstore.remote_url : ''
-            },
-            set(value) {
-                this.$store.dispatch('gitstore/setRemoteUrl', value)
-                this.setLocalGitStore();
-            }
         }
     },
     methods: {
         setLocalGitStore : function(){
             localStorage.setItem('gitStore', JSON.stringify(this.$store.state.gitstore) )
+        },
+        clone : function(){
+            this.$store.dispatch('gitstore/cloneRepo', {
+                repo : this.repo,
+                remote_url : this.remote_url
+            })
+            this.setLocalGitStore();
+        },
+        pull : function(){
+            this.$store.dispatch('gitstore/pullRepo', {
+                repo : this.repo,
+                remote_url : this.remote_url
+            })
+            this.setLocalGitStore();
+        },
+        init : function(){
+            this.$store.dispatch('gitstore/initRepo', {
+                repo : this.repo,
+                remote_url : this.remote_url
+            })
+            this.setLocalGitStore();
+        }
+    },
+    watch : {
+        'menu' : function(newV){
+            console.log(true)
+            if (newV === true){
+                this.repo = this.$store.state.gitstore ? this.$store.state.gitstore.repo : ''
+                this.remote_url = this.$store.state.gitstore ? this.$store.state.gitstore.remote_url : ''
+            }
         }
     }
 }
