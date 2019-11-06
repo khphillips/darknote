@@ -15,14 +15,15 @@
                 </h4>
             </v-card-title>
             <v-card-text>
-                <v-text-field dense v-model="username" label="Username"></v-text-field>
-                <v-text-field password dense v-model="password" label="Password"></v-text-field>
+                <v-text-field dense v-model="name" label="Name"></v-text-field>
                 <v-text-field dense v-model="email" label="Email"></v-text-field>
                 <v-text-field dense v-model="repo" label="Repo"></v-text-field>
                 <v-text-field dense v-model="remote_url" label="Remote Url"></v-text-field>
                 ++{{ repo }}++{{ remote_url }}++
             </v-card-text>
             <v-card-actions>
+                <v-btn @click="save">New</v-btn>
+                <v-btn @click="load">Load</v-btn>
                 <v-btn @click="clone">Clone</v-btn>
                 <v-btn @click="pull">Pull</v-btn>
                 <v-btn @click="init">Init</v-btn>
@@ -37,7 +38,9 @@ export default {
         return {
             menu: false,
             repo : null,
-            remote_url : null
+            remote_url : null,
+            name: null,
+            email:null
         }
     },
     created: function() {
@@ -47,10 +50,12 @@ export default {
                 var ls = JSON.parse(this.localGitStore);
                 console.log('setting from localstorage')
                 this.$store.dispatch('gitstore/setUser', ls)
-                this.$store.dispatch('gitstore/pullRepo', {
-                    repo : ls.repo,
-                    remote_url : ls.remote_url
-                });
+                this.$store.dispatch('gitstore/loadRepo', ls)
+                
+                //this.$store.dispatch('gitstore/pullRepo', {
+                //    repo : ls.repo,
+                //    remote_url : ls.remote_url
+                //});
             }
         }
     },
@@ -58,37 +63,32 @@ export default {
         localGitStore : function(){
             return localStorage.getItem('gitStore');
         },
-        username: {
-            get() {
-                return this.$store.state.gitstore ? this.$store.state.gitstore.username : ''
-            },
-            set(value) {
-                this.$store.dispatch('gitstore/setUser', { username: value });
-                this.setLocalGitStore();
-            }
-        },
-        email: {
-            get() {
-                return this.$store.state.gitstore ? this.$store.state.gitstore.email : ''
-            },
-            set(value) {
-                this.$store.dispatch('gitstore/setUser', { email: value })
-                this.setLocalGitStore();
-            }
-        },
-        password: {
-            get() {
-                return this.$store.state.gitstore ? this.$store.state.gitstore.password : ''
-            },
-            set(value) {
-                this.$store.dispatch('gitstore/setUser', { password: value })
-                this.setLocalGitStore();
-            }
-        }
     },
     methods: {
         setLocalGitStore : function(){
             localStorage.setItem('gitStore', JSON.stringify(this.$store.state.gitstore) )
+        },
+        save : function(){
+            this.$store.dispatch('gitstore/setUser', { 
+                username: this.name,
+                email: this.email 
+            });
+            this.$store.dispatch('gitstore/setRepo', { 
+                repo: this.repo,
+                remote_url: this.remote_url 
+            });
+            this.$nextTick(this.setLocalGitStore);
+        },
+        load : function(){
+            this.$store.dispatch('gitstore/setUser', { 
+                username: this.name,
+                email: this.email 
+            });
+            this.$store.dispatch('gitstore/loadRepo', { 
+                repo: this.repo,
+                remote_url: this.remote_url 
+            });
+            this.$nextTick(this.setLocalGitStore);
         },
         clone : function(){
             this.$store.dispatch('gitstore/cloneRepo', {
@@ -116,8 +116,10 @@ export default {
         'menu' : function(newV){
             console.log(true)
             if (newV === true){
-                this.repo = this.$store.state.gitstore ? this.$store.state.gitstore.repo : ''
-                this.remote_url = this.$store.state.gitstore ? this.$store.state.gitstore.remote_url : ''
+                this.repo = this.$store.state.gitstore ? this.$store.state.gitstore.repo : null
+                this.remote_url = this.$store.state.gitstore ? this.$store.state.gitstore.remote_url : null
+                this.name = this.$store.state.gitstore ? this.$store.state.gitstore.name : null
+                this.email = this.$store.state.gitstore ? this.$store.state.gitstore.email : null
             }
         }
     }
