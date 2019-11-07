@@ -1,20 +1,20 @@
 <template>
   <v-app dark id="inspire" class="text3--text">
 
-    <v-navigation-drawer v-model="drawerRight" width="30%" app clipped hide-overlay stateless right class="primary darken-1">
+    <v-navigation-drawer v-model="drawerRight" width="30%" app clipped hide-overlay stateless right class="darknote darken-1">
       Console
     </v-navigation-drawer>
 
-    <v-app-bar dense app clipped-right class="primary text3--text" dark>
+    <v-app-bar dense app clipped-right class="darknote text3--text" dark>
       <v-app-bar-nav-icon color="text3" @click.stop="drawer = !drawer" />
       <v-toolbar-title>DARKNOTE</v-toolbar-title>
       <v-spacer />
-      <v-btn small dark class="primary darken-1" fab @click.stop="drawerRight = !drawerRight">
+      <v-btn small dark class="darknote darken-1" fab @click.stop="drawerRight = !drawerRight">
         <v-icon small>fas fa-terminal</v-icon>
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" width="150px" app class="primary darken-1 text1--text">
+    <v-navigation-drawer v-model="drawer" width="150px" app class="darknote darken-1 text1--text">
       <v-list dense>
         <v-list-item :to="{ name: 'home', params: { userId: 123 }}">
           <v-list-item-action>
@@ -43,7 +43,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-navigation-drawer v-model="left" fixed temporary class="primary darken-2"/>
+    <v-navigation-drawer v-model="left" fixed temporary class="darknote darken-2"/>
 
     <v-content>
       <v-container class="fill-height" fluid>
@@ -51,10 +51,10 @@
       </v-container>
     </v-content>
 
-    <v-navigation-drawer v-model="right" fixed right temporary  class="primary darken-2"/>
+    <v-navigation-drawer v-model="right" fixed right temporary  class="darknote darken-2"/>
 
     <v-system-bar>
-      <v-footer app color="primary" class="text3--text">
+      <v-footer app color="darknote" class="text3--text">
         <git-store-info></git-store-info>
         <v-spacer />
         <span>&copy; 2019</span>
