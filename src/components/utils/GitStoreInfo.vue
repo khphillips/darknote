@@ -1,34 +1,39 @@
 <template>
-    <v-menu v-model="menu" :close-on-content-click="false" :nudge-width="200" offset-x>
+    <v-menu :min-height="425" v-model="menu" :close-on-content-click="false" :nudge-width="200" offset-y>
         <template v-slot:activator="{ on }">
             <v-badge color="accent">
                 <template v-slot:badge>
                     <span v-if="remote_url == null || remote_url == ''">!</span>
                 </template>
-                <v-icon class="text3--text" v-on="on">fab fa-github</v-icon>
+                <v-icon class="text3--text" v-on="on">fab fa-git-square</v-icon>
             </v-badge>
         </template>
         <v-card  class="primary darken-1 pa-2">
             <v-card-title>
                 <h4 class="text3--text">
-                    <v-icon class="text3--text" left>fab fa-github</v-icon>GitHub Settings
+                    <v-icon class="text3--text" left>fab fa-git-square</v-icon>Git Settings
                 </h4>
             </v-card-title>
             <v-card-text>
                 <v-text-field dense v-model="name" label="Name"></v-text-field>
                 <v-text-field dense v-model="email" label="Email"></v-text-field>
                 <v-text-field dense v-model="repo" label="Repo"></v-text-field>
-                <v-text-field dense v-model="remote_url" label="Remote Url"></v-text-field>
-                ++{{ repo }}++{{ remote_url }}++
+                <v-text-field :disabled="!newR" dense v-model="remote_url" label="Remote Url"></v-text-field>
             </v-card-text>
-            <v-card-actions>
-                <v-btn @click="save">New</v-btn>
-                <v-btn @click="load">Load</v-btn>
-                <v-btn @click="clone">Clone</v-btn>
-                <v-btn @click="pull">Pull</v-btn>
-                <v-btn @click="init">Init</v-btn>
+            <v-card-actions wrap>
+                <v-btn v-if="!newR" @click="newRepo">New</v-btn>
+                <v-btn v-if="newR" @click="save">Save</v-btn>
+                <v-btn v-if="!newR" @click="load">Load/Pull</v-btn>
+                <v-btn v-if="newR" @click="clone">Clone</v-btn>
             </v-card-actions>
         </v-card>
+        <v-overlay absolute :value="error != null" color="error">
+            <v-card @click="error = null">
+                <v-card-text>
+                {{ error }}
+                </v-card-text>
+            </v-card>
+        </v-overlay>
     </v-menu>
 </template>
 <script>
@@ -40,7 +45,9 @@ export default {
             repo : null,
             remote_url : null,
             name: null,
-            email:null
+            email:null,
+            error:null,
+            newR : false
         }
     },
     created: function() {
@@ -68,49 +75,79 @@ export default {
         setLocalGitStore : function(){
             localStorage.setItem('gitStore', JSON.stringify(this.$store.state.gitstore) )
         },
+        newRepo : function(){
+            this.repo = null
+            this.remote_url = null
+            this.name = null
+            this.email = null
+            this.error = null
+            this.newR = true;
+        },
         save : function(){
+            this.error = null
+            var g = this;
             this.$store.dispatch('gitstore/setUser', { 
                 username: this.name,
                 email: this.email 
             });
-            this.$store.dispatch('gitstore/setRepo', { 
+            this.$store.dispatch('gitstore/newRepo', { 
                 repo: this.repo,
                 remote_url: this.remote_url 
+            }).then(function(err){
+                if (err){
+                    g.error = err
+                }else{
+                    g.newR = false;
+                }
             });
             this.$nextTick(this.setLocalGitStore);
         },
         load : function(){
+            this.error = null
+            var g = this;
             this.$store.dispatch('gitstore/setUser', { 
                 username: this.name,
                 email: this.email 
-            });
+            })
             this.$store.dispatch('gitstore/loadRepo', { 
                 repo: this.repo,
                 remote_url: this.remote_url 
+            }).then(function(err){
+                if (err){
+                    g.error = err
+                }
             });
             this.$nextTick(this.setLocalGitStore);
         },
         clone : function(){
+            this.error = null
+            var g = this;
+            this.$store.dispatch('gitstore/setUser', { 
+                username: this.name,
+                email: this.email 
+            })
             this.$store.dispatch('gitstore/cloneRepo', {
                 repo : this.repo,
                 remote_url : this.remote_url
-            })
-            this.setLocalGitStore();
+            }).then(function(err){
+                if (err){
+                    g.error = err
+                }else{
+                    g.newR = false;
+                }
+            });
+            this.$nextTick(this.setLocalGitStore);
         },
         pull : function(){
             this.$store.dispatch('gitstore/pullRepo', {
                 repo : this.repo,
                 remote_url : this.remote_url
-            })
-            this.setLocalGitStore();
+            }).then(function(err){
+                if (err){
+                    g.error = err
+                }
+            });
         },
-        init : function(){
-            this.$store.dispatch('gitstore/initRepo', {
-                repo : this.repo,
-                remote_url : this.remote_url
-            })
-            this.setLocalGitStore();
-        }
     },
     watch : {
         'menu' : function(newV){
@@ -120,6 +157,7 @@ export default {
                 this.remote_url = this.$store.state.gitstore ? this.$store.state.gitstore.remote_url : null
                 this.name = this.$store.state.gitstore ? this.$store.state.gitstore.name : null
                 this.email = this.$store.state.gitstore ? this.$store.state.gitstore.email : null
+                this.newR = false;
             }
         }
     }
@@ -130,4 +168,8 @@ export default {
 	body .v-menu__content .v-card__title h4{
 		margin-top: 0;
 	}
+    .placeholder{
+        height: 40px;
+        margin-bottom: 16px;
+    }
 </style>
