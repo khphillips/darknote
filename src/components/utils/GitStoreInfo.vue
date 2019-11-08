@@ -19,7 +19,7 @@
                 <v-text-field dense v-model="email" label="Email"></v-text-field>
                 <v-select :items="$store.state.gitstore.repoList" v-model="repo" label="Repository"></v-select>
                 <v-btn @click="newRepo">New</v-btn>
-                <v-btn @click="load">Pull</v-btn> 
+                <v-btn @click="pull">Pull</v-btn> 
             </v-card-text>
             <v-card-text v-else>
                 <v-text-field dense v-model="repo_label" label="Repository Label"></v-text-field>
@@ -54,7 +54,7 @@ export default {
         }
     },
     created: function() {
-        if (typeof this.username == 'undefined' || this.username == null){
+        if (typeof this.name == 'undefined' || this.name == null){
             //not defined so lets pull from localStorage
             if(this.localGitStore != null){
                 var ls = JSON.parse(this.localGitStore);
@@ -111,10 +111,6 @@ export default {
         load : function(){
             this.error = null
             var g = this;
-            this.$store.dispatch('gitstore/setUser', { 
-                username: this.name,
-                email: this.email 
-            })
             this.$store.dispatch('gitstore/loadRepo', { 
                 repo: this.repo,
                 remote_url: this.remote_url 
